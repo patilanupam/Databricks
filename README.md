@@ -1,386 +1,243 @@
-# Supply_Chain Decision Engine – Local Setup & Databricks Integration Guide
+# Databricks Supply Chain Experiments — Daily Engineering Log
 
-This document explains how to run the Supply_Chain Decision Engine locally, configure Databricks authentication, connect to Databricks Foundation Models, and troubleshoot common issues encountered during setup.
+## Purpose
 
----
+This repository documents a **daily hands-on exploration of building an end-to-end supply chain application on Databricks**.
 
-# 1. System Architecture Overview
+The goal is not just to build a working system, but to **systematically learn how to design, debug, and deploy production-style AI and data workflows on Databricks from scratch**.
 
-The application consists of the following components:
+Each day we experiment with different components of the platform, record issues encountered, and document the steps required to solve them.
 
-Frontend (local UI)  
-Backend API (Python application)  
-Databricks Foundation Model endpoint (LLM inference)
-
-The backend communicates with Databricks using:
-
-- Databricks SDK (`WorkspaceClient`)
-- OpenAI-compatible API for Foundation Models
-- Databricks CLI authentication
+Over time this becomes a **practical playbook for building Databricks applications in real environments**.
 
 ---
 
-# 2. Required Tools
+# Objectives
 
-Install the following before running the project.
+The experiments in this repository focus on learning how to build a complete application stack on Databricks, including:
 
-## Python
+* Data ingestion and processing
+* AI / LLM powered workflows
+* Supply chain analytics
+* Model serving
+* API integration
+* Local development with Databricks services
+* Debugging infrastructure issues
+* Production architecture patterns
 
-Ensure Python 3.10+ is installed.
-
-Check:
-
-```bash
-python --version
-```
-
----
-
-## uv (Python environment manager)
-
-Install uv:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Verify:
-
-```bash
-uv --version
-```
-
-If the command is not recognized, add this to PATH:
-
-```
-C:\Users\<username>\.local\bin
-```
+The long-term aim is to understand **how to go from a blank workspace to a fully working AI-powered supply chain system**.
 
 ---
 
-## Databricks CLI
+# What We Are Building
 
-Install:
+The experiments revolve around building components for a **Supply Chain Decision Engine**.
 
-```bash
-pip install databricks-cli
-```
+Example use cases include:
 
-Verify:
+* Claim processing automation
+* Order anomaly detection
+* Supply chain document understanding
+* AI-assisted decision making
+* Demand and fulfillment analytics
+* Automated workflow orchestration
 
-```bash
-databricks --version
-```
-
-If the command is not recognized, add this directory to PATH:
-
-```
-C:\Users\<username>\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts
-```
+These components will eventually form a **complete AI-driven supply chain platform**.
 
 ---
 
-# 3. Databricks Authentication
+# Daily Experiment Approach
 
-Authenticate using the Databricks CLI.
+Each day follows a simple structure.
 
-Run:
+1. Pick one capability of Databricks to explore
+2. Implement a working prototype
+3. Record the steps required to build it
+4. Document errors encountered
+5. Document how the issues were resolved
 
-```bash
-databricks auth login
-```
+This approach helps build a **practical troubleshooting knowledge base**.
 
-When prompted:
+---
 
-```
-Databricks host:
-```
-
-Enter ONLY the base workspace URL:
+# Repository Structure
 
 ```
-https://adb-3423511784067605.5.azuredatabricks.net
-```
-
-Do NOT include:
-
-```
-/browse
-/workspace
-/serving-endpoints
-?o=
+project-root
+│
+├── core/
+│   └── application logic
+│
+├── workflow/
+│   └── LLM workflows and orchestration
+│
+├── data/
+│   ├── input
+│   ├── output
+│   └── sample datasets
+│
+├── docs/
+│   └── daily experiment logs
+│
+├── .env
+├── README.md
 ```
 
 ---
 
-## Databricks Profile
+# Experiment Categories
 
-When prompted:
+The exploration is organized across several technical areas.
 
-```
-Databricks profile name [DEFAULT]:
-```
+## Databricks Platform
 
-Press **Enter** to use the default profile.
+Learning how to configure and use:
 
-This creates:
-
-```
-C:\Users\<username>\.databrickscfg
-```
-
-Example:
-
-```ini
-[DEFAULT]
-host = https://adb-3423511784067605.5.azuredatabricks.net
-auth_type = databricks-cli
-```
+* Databricks CLI
+* Workspace authentication
+* Databricks SDK
+* Model Serving
+* Foundation Models
+* Unity Catalog
+* Databricks Jobs
 
 ---
 
-## Verify Authentication
+## Data Engineering
 
-Run:
+Building supply chain data pipelines:
 
-```bash
-databricks current-user me
-```
-
-Expected output:
-
-```json
-{
-  "userName": "your-email"
-}
-```
+* Data ingestion
+* Data transformation
+* Batch processing
+* Delta tables
+* Feature preparation
 
 ---
 
-# 4. Verify Databricks Model Serving Endpoint
+## AI and LLM Integration
 
-List available endpoints:
+Testing how large language models can help automate supply chain tasks.
 
-```bash
-databricks serving-endpoints list
-```
+Examples include:
 
-Example output:
-
-```json
-"name": "databricks-claude-sonnet-4-5"
-```
-
-The endpoint name must match the value used in `.env`.
+* Claim information extraction
+* Document classification
+* Structured data generation
+* Workflow automation
 
 ---
 
-# 5. Environment Configuration
+## Application Layer
 
-Create or update `.env` in the project root.
+Building application components such as:
 
-Example:
-
-```env
-# Databricks Configuration
-DATABRICKS_MODEL_ENDPOINT=databricks-claude-sonnet-4-5
-LLM_TEMPERATURE=0.1
-
-# Data Paths
-INPUT_FOLDER=data/input
-OUTPUT_FOLDER=data/output
-ORDERS_FILE=data/orders/orders.json
-PDF_STORAGE=data/pdfs
-```
-
-Important:
-
-```
-DATABRICKS_MODEL_ENDPOINT
-```
-
-must contain the **serving endpoint name**, not the model identifier.
-
-Correct:
-
-```
-databricks-claude-sonnet-4-5
-```
-
-Incorrect:
-
-```
-system.ai.databricks-claude-sonnet-4-5
-```
+* Backend APIs
+* Workflow orchestration
+* Local development environments
+* Databricks service integration
 
 ---
 
-# 6. Running the Application
+# What Will Be Documented
 
-Install dependencies:
+For every experiment we record:
 
-```bash
-uv sync --all-extras
-```
+### What we attempted
 
-Run the backend:
+The feature or workflow we tried to build.
 
-```bash
-uv run python -m core.main --file
-```
+### How we built it
 
----
+Commands, configuration steps, and architecture.
 
-# 7. How the LLM Client Works
+### Errors encountered
 
-The backend uses the Databricks SDK for authentication.
+Real issues encountered during development.
 
-Key steps:
+Examples:
 
-1. Load credentials from `~/.databrickscfg`
-2. Discover workspace host
-3. Build base URL for serving endpoints
+* authentication errors
+* endpoint configuration issues
+* dependency conflicts
+* API request failures
 
-Example flow in `client.py`:
+### Debugging process
 
-```
-WorkspaceClient() → load auth
-host → Databricks workspace
-base_url → https://<host>/serving-endpoints
-model → endpoint name
-```
+How the issue was investigated and resolved.
 
-Requests are sent through the OpenAI-compatible API.
+### Final working solution
+
+The corrected configuration or code.
 
 ---
 
-# 8. Common Errors and Fixes
+# Example Topics We Will Explore
 
-## Error: `uv command not found`
+Some of the areas planned for experimentation include:
 
-Cause:
-`uv` installed but not in PATH.
-
-Fix:
-Add to PATH:
-
-```
-C:\Users\<username>\.local\bin
-```
+* Databricks CLI authentication
+* Model serving endpoint configuration
+* Using Foundation Models for document extraction
+* Connecting local applications to Databricks
+* Building supply chain data pipelines
+* Debugging LLM API integrations
+* Automating workflows with Databricks Jobs
 
 ---
 
-## Error: `databricks command not recognized`
+# Why This Repository Exists
 
-Cause:
-Databricks CLI scripts folder not in PATH.
+Most Databricks tutorials show **clean success paths**.
 
-Fix:
-Add:
+Real projects rarely work that way.
 
-```
-Python313\Scripts
-```
+This repository focuses on the **real engineering process**, including:
 
-to PATH.
+* mistakes
+* broken configurations
+* debugging steps
+* infrastructure challenges
 
----
+Documenting these experiences makes it easier to:
 
-## Error: `cannot configure default credentials`
-
-Cause:
-Databricks authentication missing.
-
-Fix:
-
-```
-databricks auth login
-```
+* onboard new engineers
+* troubleshoot issues faster
+* build reliable production systems
 
 ---
 
-## Error: `ENDPOINT_NOT_FOUND`
+# Contribution Model
 
-Cause:
+Experiments are logged continuously.
 
-Incorrect serving endpoint URL or wrong endpoint name.
+Each experiment includes:
 
-Verify endpoint:
+* setup steps
+* configuration details
+* observed issues
+* working solutions
 
-```
-databricks serving-endpoints list
-```
-
-Ensure `.env` contains the correct endpoint name.
-
----
-
-## Error: `404 Not Found` for `/serving-endpoints/...`
-
-Cause:
-
-Wrong API path or model endpoint.
-
-Correct format:
-
-```
-/serving-endpoints/<endpoint_name>/invocations
-```
+Over time this repository becomes a **practical engineering knowledge base for Databricks development**.
 
 ---
 
-# 9. Debugging Tips
+# Long-Term Vision
 
-Check backend logs for failing API calls.
+By the end of these experiments we aim to have:
 
-Example log:
-
-```
-POST /serving-endpoints/... 404
-```
-
-Use these commands for verification:
-
-```bash
-databricks current-user me
-```
-
-```bash
-databricks serving-endpoints list
-```
+* a working **AI-powered supply chain decision system**
+* a documented **Databricks application architecture**
+* a detailed **debugging guide for real-world deployments**
 
 ---
 
-# 10. Project Execution Flow
+# Key Takeaway
 
-1. Authenticate with Databricks CLI  
-2. Verify serving endpoint  
-3. Configure `.env`  
-4. Install dependencies with uv  
-5. Start backend with uv run  
-6. Backend calls Databricks Foundation Model endpoint
+This repository is not just about writing code.
 
----
+It is about **learning how real Databricks systems are built, broken, and fixed**.
 
-# 11. Useful References
-
-Databricks Authentication  
-https://docs.databricks.com/en/dev-tools/auth.html
-
-Foundation Model Serving  
-https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models
-
-Claude Sonnet Model  
-https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models/supported-models#claude-sonnet-4-5
+Every experiment moves us closer to understanding how to design **production-ready data and AI platforms on Databricks**.
 
 ---
-
-# 12. Summary
-
-Key points learned:
-
-- Databricks CLI authentication must use the base workspace URL.
-- Serving endpoints are different from model identifiers.
-- `.env` must contain the serving endpoint name.
-- OpenAI client communicates with Databricks through serving endpoints.
-- Most errors occur due to incorrect endpoint paths or authentication configuration.
