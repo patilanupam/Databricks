@@ -1,6 +1,6 @@
-# Lipton Decision Engine – Local Setup & Databricks Integration Guide
+# Supply_Chain Decision Engine – Local Setup & Databricks Integration Guide
 
-This document explains how to run the Lipton Decision Engine locally, configure Databricks authentication, connect to Databricks Foundation Models, and troubleshoot common issues encountered during setup.
+This document explains how to run the Supply_Chain Decision Engine locally, configure Databricks authentication, connect to Databricks Foundation Models, and troubleshoot common issues encountered during setup.
 
 ---
 
