@@ -31,9 +31,10 @@ If you are new to Databricks, or you are trying to build something real and hitt
 
 ```mermaid
 mindmap
-  root((Supply Chain\nDecision Engine))
+  root((Supply Chain
+Decision Engine))
     Data
-      Orders & Inventory
+      Orders and Inventory
       Logistics Feeds
       Delta Tables
     AI
@@ -44,7 +45,7 @@ mindmap
       Databricks SDK
       Model Serving
       Unity Catalog
-      Jobs & Workflows
+      Jobs and Workflows
     Application
       Backend API
       Local Dev Setup
@@ -57,105 +58,129 @@ mindmap
 
 ```mermaid
 graph TD
-    A[🖥️ Local Frontend] -->|HTTP Request| B[🐍 Python Backend API]
-    B -->|Databricks SDK| C[🔐 Auth — databrickscfg]
-    C --> D[☁️ Databricks Workspace]
-    D --> E[🤖 Foundation Model\nServing Endpoint]
-    D --> F[📦 Unity Catalog\nDelta Tables]
-    D --> G[⚙️ Databricks Jobs\nOrchestration]
-    E -->|LLM Response| B
-    F -->|Supply Chain Data| B
-    G -->|Workflow Triggers| B
+    A["🖥️  Frontend UI\nLocal Interface"] -->|HTTP| B["🐍  Python Backend\nApplication Layer"]
+    B -->|authenticates via| C["🔐  Databricks Auth\n~/.databrickscfg"]
+    C -->|connects to| D["☁️  Databricks Workspace"]
 
-    style A fill:#1B3A4B,color:#fff,stroke:#FF3621
-    style B fill:#FF3621,color:#fff,stroke:#FF3621
-    style C fill:#2D2D2D,color:#fff,stroke:#FF3621
-    style D fill:#FF3621,color:#fff,stroke:#FF3621
-    style E fill:#1B1B1B,color:#fff,stroke:#FF3621
-    style F fill:#1B3A4B,color:#fff,stroke:#FF3621
-    style G fill:#1B3A4B,color:#fff,stroke:#FF3621
+    D --> E["🤖  Foundation Model\nServing Endpoint\nclaude-sonnet-4-5"]
+    D --> F["📦  Unity Catalog\nDelta Tables"]
+    D --> G["⚙️  Jobs and\nWorkflows"]
+
+    E -->|LLM decisions| B
+    F -->|supply chain data| B
+    G -->|orchestration| B
+
+    style A fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style B fill:#FFF7ED,color:#7c2d12,stroke:#FDBA74,stroke-width:2px
+    style C fill:#F0FDF4,color:#14532d,stroke:#86EFAC,stroke-width:2px
+    style D fill:#FF3621,color:#ffffff,stroke:#FF3621,stroke-width:3px
+    style E fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style F fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style G fill:#F5F3FF,color:#4c1d95,stroke:#C4B5FD,stroke-width:2px
 ```
 
 ---
 
-## 🎯 What This Is About
+## 🔐 Authentication Flow
 
-We are not just writing code.
+```mermaid
+sequenceDiagram
+    participant Dev as 💻 You
+    participant CLI as 🛠️ Databricks CLI
+    participant CFG as 📄 .databrickscfg
+    participant SDK as 🔧 WorkspaceClient
+    participant EP as 🤖 Serving Endpoint
 
-We are learning how real Databricks systems are **designed**, **broken**, and **fixed** — and documenting every step so that anyone can follow along or pick up where we left off.
-
-| What We Do | Why It Matters |
-|------------|---------------|
-| 🔨 Build working prototypes daily | Learn by doing, not just reading |
-| 💥 Record every error we hit | Real issues, not sanitised tutorials |
-| 🔍 Document the debugging process | Build a practical troubleshooting guide |
-| ✅ Write the working solution | Leave a clear path for others to follow |
+    Dev->>CLI: databricks auth login
+    CLI->>Dev: Databricks host?
+    Dev->>CLI: https://workspace.azuredatabricks.net
+    CLI->>CFG: Save credentials locally
+    Note over CFG: host + auth_type stored
+    SDK->>CFG: Load credentials on startup
+    SDK->>EP: POST /serving-endpoints/name/invocations
+    EP-->>SDK: LLM Response
+    SDK-->>Dev: Supply chain decision
+```
 
 ---
 
 ## 🔬 Experiment Areas
 
 ```mermaid
-flowchart LR
-    subgraph PLATFORM["☁️ Databricks Platform"]
-        P1[CLI Auth]
-        P2[SDK Setup]
-        P3[Model Serving]
-        P4[Unity Catalog]
-        P5[Jobs]
+flowchart TB
+    subgraph PLATFORM["  ☁️ Databricks Platform  "]
+        direction LR
+        P1["🔑 CLI Auth"]
+        P2["🔧 SDK Setup"]
+        P3["🤖 Model Serving"]
+        P4["📦 Unity Catalog"]
+        P5["⚙️ Jobs"]
     end
 
-    subgraph DATA["📊 Data Engineering"]
-        D1[Ingestion]
-        D2[Delta Tables]
-        D3[Transformation]
-        D4[Batch Processing]
+    subgraph DATA["  📊 Data Engineering  "]
+        direction LR
+        D1["📥 Ingestion"]
+        D2["🗄️ Delta Tables"]
+        D3["🔄 Transformation"]
+        D4["📦 Batch Processing"]
     end
 
-    subgraph AI["🤖 AI & LLM"]
-        A1[Foundation Models]
-        A2[Document Extraction]
-        A3[Anomaly Detection]
-        A4[Workflow Automation]
+    subgraph AI["  🧠 AI and LLM  "]
+        direction LR
+        A1["🤖 Foundation Models"]
+        A2["📄 Doc Extraction"]
+        A3["🚨 Anomaly Detection"]
+        A4["🔁 Automation"]
     end
 
-    subgraph APP["🐍 Application Layer"]
-        AP1[Backend API]
-        AP2[Local Dev]
-        AP3[Orchestration]
+    subgraph APP["  🐍 Application Layer  "]
+        direction LR
+        AP1["🌐 Backend API"]
+        AP2["💻 Local Dev"]
+        AP3["🎯 Orchestration"]
     end
 
     PLATFORM --> DATA
     DATA --> AI
     AI --> APP
 
-    style PLATFORM fill:#FF3621,color:#fff,stroke:none
-    style DATA fill:#1B3A4B,color:#fff,stroke:none
-    style AI fill:#2D2D2D,color:#fff,stroke:none
-    style APP fill:#1B1B1B,color:#fff,stroke:none
+    style PLATFORM fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style DATA fill:#F0FDF4,color:#14532d,stroke:#86EFAC,stroke-width:2px
+    style AI fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style APP fill:#FFF7ED,color:#7c2d12,stroke:#FDBA74,stroke-width:2px
 ```
+
+---
+
+## 🎯 What This Is About
+
+| What We Do | Why It Matters |
+|------------|---------------|
+| 🔨 Build working prototypes daily | Learn by doing, not just reading docs |
+| 💥 Record every error we hit | Real issues, not sanitised tutorials |
+| 🔍 Document the debugging process | Build a practical troubleshooting guide |
+| ✅ Write the working solution | Leave a clear path for others to follow |
+| 📝 Log everything | Becomes a playbook for the whole team |
 
 ---
 
 ## 📅 Daily Experiment Format
 
-Every day follows the same simple structure:
-
 ```mermaid
 flowchart LR
-    A([🎯 Pick a\nCapability]) --> B([🔨 Build a\nPrototype])
-    B --> C([💥 Hit\nErrors])
-    C --> D([🔍 Debug\n& Investigate])
-    D --> E([✅ Document\nthe Fix])
-    E --> F([📝 Log\nthe Day])
+    A["🎯 Pick a\nCapability"] --> B["🔨 Build a\nPrototype"]
+    B --> C["💥 Hit\nErrors"]
+    C --> D["🔍 Debug\nand Investigate"]
+    D --> E["✅ Document\nthe Fix"]
+    E --> F["📝 Log\nthe Day"]
     F --> A
 
-    style A fill:#FF3621,color:#fff,stroke:none
-    style B fill:#1B3A4B,color:#fff,stroke:none
-    style C fill:#2D2D2D,color:#fff,stroke:none
-    style D fill:#1B3A4B,color:#fff,stroke:none
-    style E fill:#FF3621,color:#fff,stroke:none
-    style F fill:#1B1B1B,color:#fff,stroke:none
+    style A fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style B fill:#F0FDF4,color:#14532d,stroke:#86EFAC,stroke-width:2px
+    style C fill:#FEF2F2,color:#7f1d1d,stroke:#FCA5A5,stroke-width:2px
+    style D fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style E fill:#F0FDF4,color:#14532d,stroke:#86EFAC,stroke-width:2px
+    style F fill:#F5F3FF,color:#4c1d95,stroke:#C4B5FD,stroke-width:2px
 ```
 
 ---
@@ -163,7 +188,7 @@ flowchart LR
 ## 🗓️ Experiment Log
 
 <details>
-<summary><b>📅 Day 1 — Local Setup & First Databricks Connection</b></summary>
+<summary><b>📅 Day 1 — Local Setup and First Databricks Connection</b></summary>
 
 <br>
 
@@ -173,28 +198,29 @@ flowchart LR
 
 **What we built:**
 - Project scaffold with `uv` as the environment manager
-- Databricks CLI authentication
+- Databricks CLI authentication configured
 - First successful LLM call via the OpenAI-compatible serving endpoint
 
 ---
 
-**Errors we hit:**
+**Errors we hit and how we fixed them:**
 
-| Error | What Caused It | How We Fixed It |
-|-------|---------------|-----------------|
-| `uv not recognized` | Binary not added to PATH after install | Added `~/.local/bin` to system PATH |
-| `databricks not recognized` | Python Scripts folder not in PATH | Found Scripts path via `sysconfig` and added to PATH |
-| `cannot configure credentials` | Entered full workspace URL with `/browse` path | Used base URL only — no paths, no query strings |
-| `ENDPOINT_NOT_FOUND` | Used model identifier instead of endpoint name | Ran `serving-endpoints list` to get correct name |
-| `404 Not Found` on API call | Wrong endpoint name flowing into request path | Fixed `.env` value to use serving endpoint name |
+| # | Error | Root Cause | Fix |
+|---|-------|-----------|-----|
+| 1 | `uv not recognized` | Binary not in PATH after install | Add `~/.local/bin` to system PATH |
+| 2 | `databricks not recognized` | Python Scripts folder not in PATH | Find Scripts path via `sysconfig`, add to PATH |
+| 3 | `cannot configure credentials` | Entered full URL with `/browse` appended | Use base URL only — no paths, no query strings |
+| 4 | `ENDPOINT_NOT_FOUND` | Used model identifier in `.env` | Run `serving-endpoints list`, use the `name` field |
+| 5 | `404 Not Found` on API call | Wrong name flowing into request path | Fix `.env` to use serving endpoint name not model ID |
 
 ---
 
 **Key lesson from Day 1:**
 
-> The serving endpoint name and the model identifier are not the same thing.
-> `databricks-claude-sonnet-4-5` ✅
-> `system.ai.databricks-claude-sonnet-4-5` ❌
+> The serving endpoint name and the model identifier are **not** the same thing.
+>
+> ✅ Correct: `databricks-claude-sonnet-4-5`
+> ❌ Wrong: `system.ai.databricks-claude-sonnet-4-5`
 >
 > Always verify with `databricks serving-endpoints list` before configuring anything.
 
@@ -208,43 +234,84 @@ flowchart LR
 
 ## 🚀 Getting Started From Scratch
 
-If you want to follow along or reproduce any experiment, here is the full setup path.
-
 ```mermaid
-flowchart TD
-    S1["1️⃣ Python 3.10+\npython --version"] --> S2
-    S2["2️⃣ Install uv\nPython env manager"] --> S3
-    S3["3️⃣ Install Databricks CLI\npip install databricks-cli"] --> S4
-    S4["4️⃣ Authenticate\ndatabricks auth login"] --> S5
-    S5["5️⃣ Find Serving Endpoint\ndatabricks serving-endpoints list"] --> S6
-    S6["6️⃣ Configure .env\nEndpoint name + data paths"] --> S7
-    S7["7️⃣ Install Dependencies\nuv sync --all-extras"] --> S8
-    S8["8️⃣ Run the App ✅\nuv run python -m core.main"]
+flowchart LR
+    S1["1️⃣\nPython 3.10+"] --> S2["2️⃣\nInstall uv"]
+    S2 --> S3["3️⃣\nDatabricks CLI"]
+    S3 --> S4["4️⃣\nAuth Login"]
+    S4 --> S5["5️⃣\nFind Endpoint"]
+    S5 --> S6["6️⃣\nConfigure .env"]
+    S6 --> S7["7️⃣\nuv sync"]
+    S7 --> S8["8️⃣\nRun App ✅"]
 
-    style S1 fill:#1B3A4B,color:#fff,stroke:none
-    style S2 fill:#1B3A4B,color:#fff,stroke:none
-    style S3 fill:#1B3A4B,color:#fff,stroke:none
-    style S4 fill:#FF3621,color:#fff,stroke:none
-    style S5 fill:#FF3621,color:#fff,stroke:none
-    style S6 fill:#1B3A4B,color:#fff,stroke:none
-    style S7 fill:#1B3A4B,color:#fff,stroke:none
-    style S8 fill:#2D6A2D,color:#fff,stroke:none
+    style S1 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style S2 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style S3 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style S4 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style S5 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style S6 fill:#FFF7ED,color:#7c2d12,stroke:#FDBA74,stroke-width:2px
+    style S7 fill:#FFF7ED,color:#7c2d12,stroke:#FDBA74,stroke-width:2px
+    style S8 fill:#F0FDF4,color:#14532d,stroke:#86EFAC,stroke-width:3px
 ```
 
-### Quick Commands
+### Step by Step
 
+**1 — Check Python**
 ```bash
-# 1. Authenticate with Databricks
+python --version
+# Need 3.10 or higher
+```
+
+**2 — Install uv**
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+```bash
+uv --version
+# If not found: add C:\Users\<you>\.local\bin to PATH
+```
+
+**3 — Install Databricks CLI**
+```bash
+pip install databricks-cli
+databricks --version
+# If not found, run this to locate your Scripts folder:
+python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+```
+
+**4 — Authenticate**
+```bash
 databricks auth login
-# Enter ONLY: https://your-workspace.azuredatabricks.net
+# When prompted enter ONLY the base URL — nothing else
+# ✅ https://adb-xxxx.azuredatabricks.net
+# ❌ https://adb-xxxx.azuredatabricks.net/browse/workspace
 
-# 2. Verify auth worked
 databricks current-user me
+# Should return your email
+```
 
-# 3. Find your serving endpoint name
+**5 — Find Your Endpoint**
+```bash
 databricks serving-endpoints list
+# Copy the value in the "name" field exactly
+```
 
-# 4. Install and run
+**6 — Configure .env**
+```env
+# ✅ Use the endpoint name from step 5
+DATABRICKS_MODEL_ENDPOINT=databricks-claude-sonnet-4-5
+
+# ❌ Never use the model identifier
+# DATABRICKS_MODEL_ENDPOINT=system.ai.databricks-claude-sonnet-4-5
+
+LLM_TEMPERATURE=0.1
+INPUT_FOLDER=data/input
+OUTPUT_FOLDER=data/output
+ORDERS_FILE=data/orders/orders.json
+```
+
+**7 — Install and Run**
+```bash
 uv sync --all-extras
 uv run python -m core.main --file
 ```
@@ -256,14 +323,14 @@ uv run python -m core.main --file
 ```
 supply-chain-databricks/
 │
-├── 📁 core/                  → Application logic & LLM client
-├── 📁 workflow/              → LLM workflows & orchestration
+├── 📁 core/                  →  Application logic and LLM client
+├── 📁 workflow/              →  LLM workflows and orchestration
 ├── 📁 data/
-│   ├── input/                → Raw supply chain data
-│   ├── output/               → Processed results
-│   └── orders/               → Order datasets
-├── 📁 docs/                  → Daily experiment logs
-├── .env                      → Environment config
+│   ├── input/                →  Raw supply chain data
+│   ├── output/               →  Processed results
+│   └── orders/               →  Order datasets
+├── 📁 docs/                  →  Daily experiment logs
+├── .env                      →  Environment config
 └── README.md
 ```
 
@@ -273,44 +340,46 @@ supply-chain-databricks/
 
 ```mermaid
 flowchart TD
-    START(["❌ Something broke"]) --> Q1{"Does\ndatabricks current-user me\nwork?"}
+    START(["❌ Something broke"])
 
-    Q1 -->|No| F1["Run databricks auth login\nUse base URL only"]
-    Q1 -->|Yes| Q2{"Is your endpoint\nvisible in\nserving-endpoints list?"}
+    START --> Q1{"Does\ndatabricks current-user me\nreturn your email?"}
 
-    Q2 -->|No| F2["Contact your\nworkspace admin"]
-    Q2 -->|Yes| Q3{"Does .env have\nthe endpoint name\nnot the model ID?"}
+    Q1 -->|No| F1["🔑 Re-run auth login\nUse base workspace URL only\nNo extra paths or query strings"]
+    Q1 -->|Yes| Q2{"Is your endpoint name\nvisible in\nserving-endpoints list?"}
 
-    Q3 -->|No| F3["Fix .env\nRemove system.ai prefix"]
-    Q3 -->|Yes| F4["Check backend logs\nLook at the POST path\nbeing called"]
+    Q2 -->|No| F2["📞 Contact your\nworkspace admin\nEndpoint may not be provisioned"]
+    Q2 -->|Yes| Q3{"Does .env contain\nthe endpoint name\nnot the model identifier?"}
+
+    Q3 -->|No| F3["📝 Fix your .env\nRemove system.ai prefix\nUse exact name from list"]
+    Q3 -->|Yes| F4["🔍 Check backend logs\nFind the POST path being called\nVerify URL is constructed correctly"]
 
     F1 --> OK(["✅ Try again"])
     F2 --> OK
     F3 --> OK
     F4 --> OK
 
-    style START fill:#FF3621,color:#fff,stroke:none
-    style OK fill:#2D6A2D,color:#fff,stroke:none
-    style F1 fill:#1B3A4B,color:#fff,stroke:none
-    style F2 fill:#1B3A4B,color:#fff,stroke:none
-    style F3 fill:#1B3A4B,color:#fff,stroke:none
-    style F4 fill:#1B3A4B,color:#fff,stroke:none
-    style Q1 fill:#2D2D2D,color:#fff,stroke:none
-    style Q2 fill:#2D2D2D,color:#fff,stroke:none
-    style Q3 fill:#2D2D2D,color:#fff,stroke:none
+    style START fill:#FEE2E2,color:#7f1d1d,stroke:#FCA5A5,stroke-width:2px
+    style OK fill:#DCFCE7,color:#14532d,stroke:#86EFAC,stroke-width:2px
+    style Q1 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style Q2 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style Q3 fill:#EFF6FF,color:#1e3a5f,stroke:#93C5FD,stroke-width:2px
+    style F1 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style F2 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style F3 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
+    style F4 fill:#FEF9C3,color:#713f12,stroke:#FDE047,stroke-width:2px
 ```
 
 ---
 
-## 📚 Useful References
+## 🗂️ Issues Registry
 
-| Resource | Link |
-|----------|------|
-| 📖 Databricks Auth Docs | [docs.databricks.com/en/dev-tools/auth](https://docs.databricks.com/en/dev-tools/auth.html) |
-| 🤖 Foundation Model Serving | [Azure Databricks ML Docs](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models) |
-| 🧠 Supported Models | [Claude Sonnet & Others](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models/supported-models) |
-| ⚡ uv Package Manager | [docs.astral.sh/uv](https://docs.astral.sh/uv) |
-| 🔧 Databricks SDK for Python | [databricks-sdk-py.readthedocs.io](https://databricks-sdk-py.readthedocs.io) |
+| # | Error | Root Cause | Fix | Day |
+|---|-------|-----------|-----|-----|
+| 1 | `uv not found` | Binary not in PATH | Add `~/.local/bin` to PATH | Day 1 |
+| 2 | `databricks not recognized` | Scripts folder not in PATH | Add Python Scripts to PATH | Day 1 |
+| 3 | `cannot configure credentials` | Wrong auth URL format | Use base workspace URL only | Day 1 |
+| 4 | `ENDPOINT_NOT_FOUND` | Model ID used in `.env` | Use name from `serving-endpoints list` | Day 1 |
+| 5 | `404 Not Found` | Wrong identifier in request path | Fix `.env` endpoint name | Day 1 |
 
 ---
 
@@ -322,6 +391,18 @@ By the end of these experiments we aim to have:
 - ✅ A documented architecture that others can follow and adapt
 - ✅ A real-world debugging guide built from actual failures
 - ✅ A practical playbook for onboarding engineers to Databricks fast
+
+---
+
+## 📚 References
+
+| Resource | Link |
+|----------|------|
+| 📖 Databricks Auth Docs | [docs.databricks.com/en/dev-tools/auth](https://docs.databricks.com/en/dev-tools/auth.html) |
+| 🤖 Foundation Model Serving | [Azure Databricks ML Docs](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models) |
+| 🧠 Supported Models | [Claude Sonnet and Others](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models/supported-models) |
+| ⚡ uv Package Manager | [docs.astral.sh/uv](https://docs.astral.sh/uv) |
+| 🔧 Databricks SDK for Python | [databricks-sdk-py.readthedocs.io](https://databricks-sdk-py.readthedocs.io) |
 
 ---
 
