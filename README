@@ -1,237 +1,386 @@
-```
-markdown
-# <img src="https://www.vectorlogo.zone/logos/databricks/databricks-icon.svg" width="32"/> Supply Chain Decision Engine
-### Daily Experiment Log — Building End-to-End on Databricks
+# Lipton Decision Engine – Local Setup & Databricks Integration Guide
 
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
-![Platform](https://img.shields.io/badge/Platform-Databricks-FF3621)
-![Domain](https://img.shields.io/badge/Domain-Supply%20Chain-blue)
-![Python](https://img.shields.io/badge/Python-3.10+-yellow)
-
-> 🧪 Every day we experiment, break things, fix things, and record everything.
-> This is a living document — updated daily.
+This document explains how to run the Lipton Decision Engine locally, configure Databricks authentication, connect to Databricks Foundation Models, and troubleshoot common issues encountered during setup.
 
 ---
 
-## 📌 What Are We Building?
+# 1. System Architecture Overview
 
-A **Supply Chain Decision Engine** powered by Databricks Foundation Models.
-The system processes orders and logistics data, then uses an LLM to generate smart supply chain decisions.
+The application consists of the following components:
 
----
+Frontend (local UI)  
+Backend API (Python application)  
+Databricks Foundation Model endpoint (LLM inference)
 
-## 🏗️ Architecture
+The backend communicates with Databricks using:
 
-```mermaid
-graph TD
-    A[🖥️ Frontend UI] -->|HTTP| B[🐍 Python Backend]
-    B -->|Databricks SDK| C[🔐 Auth Layer]
-    C -->|WorkspaceClient| D[☁️ Databricks Workspace]
-    D --> E[🤖 Foundation Model Endpoint\ndatabricks-claude-sonnet-4-5]
-
-    style A fill:#4A90D9,color:#fff
-    style B fill:#FF6B35,color:#fff
-    style C fill:#F7C59F,color:#333
-    style D fill:#FF3621,color:#fff
-    style E fill:#1B1B1B,color:#fff
-```
+- Databricks SDK (`WorkspaceClient`)
+- OpenAI-compatible API for Foundation Models
+- Databricks CLI authentication
 
 ---
 
-## 🔐 Authentication Flow
+# 2. Required Tools
 
-```mermaid
-sequenceDiagram
-    participant Dev as 💻 Developer
-    participant CLI as Databricks CLI
-    participant CFG as ~/.databrickscfg
-    participant SDK as WorkspaceClient
-    participant EP as Serving Endpoint
+Install the following before running the project.
 
-    Dev->>CLI: databricks auth login
-    CLI->>CFG: Save credentials
-    SDK->>CFG: Load credentials
-    SDK->>EP: POST /serving-endpoints/{name}/invocations
-    EP-->>SDK: LLM Response
-```
+## Python
 
----
+Ensure Python 3.10+ is installed.
 
-## 🗓️ Day-by-Day Log
+Check:
 
-<details>
-<summary><b>📅 Day 1 — Bootstrap & First Connection</b></summary>
-
-### 🎯 Goal
-Get the project running locally and connect to Databricks for the first time.
-
-### ✅ Wins
-- Installed `uv` and `databricks-cli`
-- Authenticated with Databricks workspace
-- Called Foundation Model endpoint successfully
-
-### ❌ Issues Hit
-
-| # | Error | Fix |
-|---|-------|-----|
-| 1 | `uv` not recognized | Add `~/.local/bin` to PATH |
-| 2 | `databricks` not recognized | Add Python Scripts folder to PATH |
-| 3 | Auth failed | Use base URL only — no `/browse` or `/workspace` |
-| 4 | `ENDPOINT_NOT_FOUND` | Use endpoint name, not model identifier |
-| 5 | `404 Not Found` | Fix `.env` endpoint name |
-
-### 💡 Key Lesson
-> Endpoint name ≠ Model identifier.
-> Always run `databricks serving-endpoints list` to confirm the correct name.
-
-</details>
-
----
-
-> 📌 More days added here as experiments continue.
-
----
-
-## 🚀 Setup From Scratch
-
-```mermaid
-flowchart LR
-    A([1\nPython 3.10+]) --> B([2\nInstall uv])
-    B --> C([3\nInstall\nDatabricks CLI])
-    C --> D([4\nAuth Login])
-    D --> E([5\nFind Endpoint])
-    E --> F([6\nConfigure .env])
-    F --> G([7\nuv sync])
-    G --> H([8\nRun App ✅])
-
-    style A fill:#e8f5e9,color:#333
-    style H fill:#c8e6c9,color:#333
-```
-
-### Step 1 — Python
 ```bash
-python --version   # Need 3.10+
+python --version
 ```
 
-### Step 2 — Install uv
+---
+
+## uv (Python environment manager)
+
+Install uv:
+
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
+
+Verify:
+
 ```bash
 uv --version
 ```
 
-### Step 3 — Install Databricks CLI
+If the command is not recognized, add this to PATH:
+
+```
+C:\Users\<username>\.local\bin
+```
+
+---
+
+## Databricks CLI
+
+Install:
+
 ```bash
 pip install databricks-cli
+```
+
+Verify:
+
+```bash
 databricks --version
 ```
 
-> ⚠️ If not recognized, add your Python Scripts folder to PATH:
-> ```bash
-> python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
-> ```
+If the command is not recognized, add this directory to PATH:
 
-### Step 4 — Authenticate
+```
+C:\Users\<username>\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts
+```
+
+---
+
+# 3. Databricks Authentication
+
+Authenticate using the Databricks CLI.
+
+Run:
+
 ```bash
 databricks auth login
 ```
+
+When prompted:
+
 ```
-# When prompted — use ONLY the base URL
-Databricks host: https://adb-3423511784067605.5.azuredatabricks.net
+Databricks host:
 ```
 
+Enter ONLY the base workspace URL:
+
+```
+https://adb-3423511784067605.5.azuredatabricks.net
+```
+
+Do NOT include:
+
+```
+/browse
+/workspace
+/serving-endpoints
+?o=
+```
+
+---
+
+## Databricks Profile
+
+When prompted:
+
+```
+Databricks profile name [DEFAULT]:
+```
+
+Press **Enter** to use the default profile.
+
+This creates:
+
+```
+C:\Users\<username>\.databrickscfg
+```
+
+Example:
+
+```ini
+[DEFAULT]
+host = https://adb-3423511784067605.5.azuredatabricks.net
+auth_type = databricks-cli
+```
+
+---
+
+## Verify Authentication
+
+Run:
+
 ```bash
-# Verify it worked
 databricks current-user me
 ```
 
-### Step 5 — Find Your Endpoint
-```bash
-databricks serving-endpoints list
-# Note the "name" field from the output
+Expected output:
+
+```json
+{
+  "userName": "your-email"
+}
 ```
 
-### Step 6 — Configure .env
+---
+
+# 4. Verify Databricks Model Serving Endpoint
+
+List available endpoints:
+
+```bash
+databricks serving-endpoints list
+```
+
+Example output:
+
+```json
+"name": "databricks-claude-sonnet-4-5"
+```
+
+The endpoint name must match the value used in `.env`.
+
+---
+
+# 5. Environment Configuration
+
+Create or update `.env` in the project root.
+
+Example:
+
 ```env
+# Databricks Configuration
 DATABRICKS_MODEL_ENDPOINT=databricks-claude-sonnet-4-5
 LLM_TEMPERATURE=0.1
+
+# Data Paths
 INPUT_FOLDER=data/input
 OUTPUT_FOLDER=data/output
 ORDERS_FILE=data/orders/orders.json
+PDF_STORAGE=data/pdfs
 ```
 
-> ✅ Correct: `databricks-claude-sonnet-4-5`
-> ❌ Wrong: `system.ai.databricks-claude-sonnet-4-5`
+Important:
 
-### Step 7 — Install Dependencies
+```
+DATABRICKS_MODEL_ENDPOINT
+```
+
+must contain the **serving endpoint name**, not the model identifier.
+
+Correct:
+
+```
+databricks-claude-sonnet-4-5
+```
+
+Incorrect:
+
+```
+system.ai.databricks-claude-sonnet-4-5
+```
+
+---
+
+# 6. Running the Application
+
+Install dependencies:
+
 ```bash
 uv sync --all-extras
 ```
 
-### Step 8 — Run
+Run the backend:
+
 ```bash
 uv run python -m core.main --file
 ```
 
 ---
 
-## 🐛 Debug Playbook
+# 7. How the LLM Client Works
 
-```mermaid
-flowchart TD
-    START([❌ App Fails]) --> Q1{databricks\ncurrent-user me\nworks?}
+The backend uses the Databricks SDK for authentication.
 
-    Q1 -->|No| FIX1[Run auth login\nwith base URL only]
-    Q1 -->|Yes| Q2{Endpoint in\nserving-endpoints list?}
+Key steps:
 
-    Q2 -->|No| FIX2[Contact workspace admin]
-    Q2 -->|Yes| Q3{.env has correct\nendpoint name?}
+1. Load credentials from `~/.databrickscfg`
+2. Discover workspace host
+3. Build base URL for serving endpoints
 
-    Q3 -->|No| FIX3[Fix .env value]
-    Q3 -->|Yes| FIX4[Check backend logs\nfor path errors]
+Example flow in `client.py`:
 
-    FIX1 --> END([✅ Resolved])
-    FIX2 --> END
-    FIX3 --> END
-    FIX4 --> END
+```
+WorkspaceClient() → load auth
+host → Databricks workspace
+base_url → https://<host>/serving-endpoints
+model → endpoint name
+```
 
-    style START fill:#ff5252,color:#fff
-    style END fill:#69f0ae,color:#333
-    style FIX1 fill:#fff9c4,color:#333
-    style FIX2 fill:#fff9c4,color:#333
-    style FIX3 fill:#fff9c4,color:#333
-    style FIX4 fill:#fff9c4,color:#333
+Requests are sent through the OpenAI-compatible API.
+
+---
+
+# 8. Common Errors and Fixes
+
+## Error: `uv command not found`
+
+Cause:
+`uv` installed but not in PATH.
+
+Fix:
+Add to PATH:
+
+```
+C:\Users\<username>\.local\bin
 ```
 
 ---
 
-## 🗂️ Issues Registry
+## Error: `databricks command not recognized`
 
-| # | Error | Root Cause | Fix | Day |
-|---|-------|-----------|-----|-----|
-| 1 | `uv not found` | Not in PATH | Add `~/.local/bin` to PATH | Day 1 |
-| 2 | `databricks not recognized` | Scripts not in PATH | Add Python Scripts to PATH | Day 1 |
-| 3 | `cannot configure credentials` | Wrong auth URL | Use base workspace URL only | Day 1 |
-| 4 | `ENDPOINT_NOT_FOUND` | Wrong name in `.env` | Use name from `serving-endpoints list` | Day 1 |
-| 5 | `404 Not Found` | Model ID used instead of endpoint name | Fix `.env` | Day 1 |
+Cause:
+Databricks CLI scripts folder not in PATH.
 
----
+Fix:
+Add:
 
-## 📚 References
-
-| | Resource | Link |
-|-|----------|------|
-| 📖 | Databricks Auth | [docs.databricks.com](https://docs.databricks.com/en/dev-tools/auth.html) |
-| 🤖 | Foundation Models | [Azure Databricks ML](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models) |
-| 🧠 | Claude Sonnet | [Supported Models](https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models/supported-models) |
-| ⚡ | uv Docs | [docs.astral.sh/uv](https://docs.astral.sh/uv) |
-
----
-
-<div align="center">
-
-**🔴 Live Experiment** &nbsp;|&nbsp; Updated Daily &nbsp;|&nbsp; Supply Chain × Databricks
-
-</div>
 ```
+Python313\Scripts
+```
+
+to PATH.
+
+---
+
+## Error: `cannot configure default credentials`
+
+Cause:
+Databricks authentication missing.
+
+Fix:
+
+```
+databricks auth login
+```
+
+---
+
+## Error: `ENDPOINT_NOT_FOUND`
+
+Cause:
+
+Incorrect serving endpoint URL or wrong endpoint name.
+
+Verify endpoint:
+
+```
+databricks serving-endpoints list
+```
+
+Ensure `.env` contains the correct endpoint name.
+
+---
+
+## Error: `404 Not Found` for `/serving-endpoints/...`
+
+Cause:
+
+Wrong API path or model endpoint.
+
+Correct format:
+
+```
+/serving-endpoints/<endpoint_name>/invocations
+```
+
+---
+
+# 9. Debugging Tips
+
+Check backend logs for failing API calls.
+
+Example log:
+
+```
+POST /serving-endpoints/... 404
+```
+
+Use these commands for verification:
+
+```bash
+databricks current-user me
+```
+
+```bash
+databricks serving-endpoints list
+```
+
+---
+
+# 10. Project Execution Flow
+
+1. Authenticate with Databricks CLI  
+2. Verify serving endpoint  
+3. Configure `.env`  
+4. Install dependencies with uv  
+5. Start backend with uv run  
+6. Backend calls Databricks Foundation Model endpoint
+
+---
+
+# 11. Useful References
+
+Databricks Authentication  
+https://docs.databricks.com/en/dev-tools/auth.html
+
+Foundation Model Serving  
+https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models
+
+Claude Sonnet Model  
+https://learn.microsoft.com/en-us/azure/databricks/machine-learning/foundation-models/supported-models#claude-sonnet-4-5
+
+---
+
+# 12. Summary
+
+Key points learned:
+
+- Databricks CLI authentication must use the base workspace URL.
+- Serving endpoints are different from model identifiers.
+- `.env` must contain the serving endpoint name.
+- OpenAI client communicates with Databricks through serving endpoints.
+- Most errors occur due to incorrect endpoint paths or authentication configuration.
